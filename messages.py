@@ -7,4 +7,4 @@ def info(a):
 	print("[Info] " + a)
 	
 def warning(a):
-	print "[Warning] " + a
+	print ("[Warning] " + a)
