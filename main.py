@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import messages
-
+import spider.spider
 
 """
     Plan projektu:
