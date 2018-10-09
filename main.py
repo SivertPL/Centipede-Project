@@ -20,6 +20,7 @@ def main():
     messages.info("Test info by sebix")
     messages.warning("Test warning by sebix")
     messages.error("TEST error by sebix")
+    spider.spider.findimages("http://page.art.pl")
     
 
 

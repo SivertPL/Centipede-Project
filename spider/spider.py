@@ -3,7 +3,7 @@ from html.parser import HTMLParser
 
 links = []
 nextpages = []
-
+startpagename = " "
 
 class HtmlF(HTMLParser):
 
@@ -11,40 +11,42 @@ class HtmlF(HTMLParser):
 
         if(tag == "img"):
             for attr in attrs:
-                if(attr[0] == "src" and attr[1][:2] == './' and (not(attr[1] in links))):
-                    links.append(attr[1])
+                if(attr[0] == "src" and (not(attr[1] in links))):
+                    if checklink(attr[1] != "0"):
+                        links.append(checklink(attr[1]))
         else:
             for attr in attrs:
-                if(attr[0] == "href" and attr[1][:2] == './'):
-                    if((not(attr[1] in nextpages)) and (attr[1][-4:] == '.php' or attr[1][-5:] == '.html')):
-                        nextpages.append(attr[1])
+                if(attr[0] == "href"):
+                    if not attr[1] in nextpages and (attr[1][-4:] == ".php" or attr[1][-5:] == ".html"):
+                        if checklink(attr[1]) != "0":
+                            nextpages.append(checklink(attr[1]))
 
-
-def filename(lin):
-    ftf = 0
-    ptf = 0
-    x = -1
-    for i in lin:
-        x = x + 1
-        if(i == '/'):
-            ftf = x + 1
-        elif(i == '.'):
-            ptf = x
-    return lin[ftf:ptf]
-
+def checklink(url):
+    if url[:2] == "./":
+        return startpagename + url[1:]
+    elif url[0] == "/":
+        return startpagename + url
+    elif url.split("/")[0] == startpagename.split("/")[-1]:
+        return startpagename + url[url.index("/")+1:]
+    elif url.split("/")[2] == startpagename.split("/")[-1]:
+        return url
+    else:
+        return "0"   
 
 def findimages(url):
-    nextpages.append(url)
+    if url.split("/")[0] == "http" or url.split("/")[0] == "https":
+        startpagename = url.split("/")[0] + "//" + url.split("/")[2]
+    nextpages.append(startpagename)
     i = -1
     a = 0
-    r = requests.get(url)
+    r = requests.get(startpagename)
     print("Program is starting checking page/s")
-    print("Current Page: " + url)
+    print("Current Page: " + startpagename)
     while True:
         i = i + 1
         if(i != 0):
-            r = requests.get(url + nextpages[i][1:])
-            print("Current Page: " + url + nextpages[i][1:])
+            r = requests.get(startpagename + nextpages[i][1:])
+            print("Current Page: " + startpagename + nextpages[i][1:])
         parser = HtmlF()
         parser.feed(r.text)
         if(i == len(nextpages) - 1):
@@ -54,9 +56,9 @@ def findimages(url):
     print("Checked all pages")
     print("Starting downloading files...")
     for x in links:
-        print("Downloading: " + filename(x))
+        print("Downloading: " + x.split("/")[-1].split(".")[0])
         fulllink = url + x[1:]
         a = a + 1
-        f = open('image' + str(a) + x[len(x) - 4:], 'wb')
+        f = open("image" + str(a) + x[len(x) - 4:], "wb")
         f.write(requests.get(fulllink).content)
         f.close()
